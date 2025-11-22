@@ -2,6 +2,7 @@ from datetime import timedelta
 from typing import Any
 
 import orjson
+from pydantic import BaseModel
 from pyignite import AioClient
 from pyignite.aio_cache import AioCache
 from pyignite.datatypes import ExpiryPolicy
@@ -52,4 +53,24 @@ class BaseCache:
         await self.cache.put(key=client_id, value=orjson.dumps(value))
 
 
-class EventsCache(BaseCache): ...
+class HistoryCache(BaseCache): ...
+
+
+class CachesContext(BaseModel):
+    client: AioIgniteClient | None = None
+    history: HistoryCache | None = None
+
+    async def configure(self, settings: Ignite) -> None:
+        self.client = AioIgniteClient(settings)
+        await self.client.connect(addresses=settings.addresses)
+        self.history = HistoryCache(
+            cache=await self.client.get_cache(
+                client_settings=self.client.create_settings(), name="HISTORY"
+            )
+        )
+        return self.client, self.history
+
+    class Config:
+        arbitrary_types_allowed = True
+
+caches_context = CachesContext()

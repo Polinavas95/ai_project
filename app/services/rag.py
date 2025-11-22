@@ -1,40 +1,44 @@
 import logging
-import uuid
 from typing import Any
 
-from app.schemas import UserLevel
 from app.services.document_loader import DocumentLoader
 
 logger = logging.getLogger(__name__)
 
 
 class RAGService:
-    def __init__(self, vector_db, documents_number: int, document_loader: DocumentLoader):
+    def __init__(self, vector_db, documents_number: int, document_loader: DocumentLoader, n_results: int = 5):
         self.vector_db = vector_db
         self.documents_number = documents_number
         self.document_loader = document_loader
+        self.n_results = n_results
 
     def initialize_with_documents(self):
         try:
-            loader = self.document_loader
-            documents = loader.load_documents()
+            documents = self.document_loader.load_documents()
 
-            self.vector_db.add_documents(documents)
-            logger.info(f"RAG service initialized with {len(documents)} documents")
+            if documents:
+                self.vector_db.add_documents(documents)
+                logger.info(f"RAG service initialized with {len(documents)} documents")
+            else:
+                logger.warning("No documents found to initialize RAG service")
 
         except Exception as e:
             logger.error(f"Error initializing RAG service with documents: {e}")
 
-    def get_relevant_context(self, query: str, topic: str, user_level: str = "beginner") -> str:
+    def get_relevant_context(self, query: str, topic: str) -> str:
+        """Получает релевантный контекст из векторной БД"""
         try:
-            where_filter = {"topic": topic, "level": user_level} if user_level else {"topic": topic}
-
-            documents = self.vector_db.search(query, topic, where_filter=where_filter, n_results=3)
+            documents = self.vector_db.search(
+                query=query,
+                topic=topic,
+                n_results=self.n_results,
+            )
 
             if not documents:
-                return "Релевантная информация не найдена в базе знаний."
+                return ""
 
-            context_parts = ["Релевантная информация из базы знаний:"]
+            context_parts = []
             for i, doc in enumerate(documents, self.documents_number):
                 doc_level = doc.get("metadata", {}).get("level", "unknown")
                 context_parts.append(f"{i}. [{doc_level}] {doc['content']}")
@@ -43,25 +47,11 @@ class RAGService:
 
         except Exception as e:
             logger.error(f"Error getting relevant context: {e}")
-            return "Ошибка при поиске информации в базе знаний."
+            return ""
 
-    def add_custom_document(self, content: str, topic: str, subtopic: str = "", level: str = UserLevel.beginner.value):
-        """Добавляет пользовательский документ в векторную БД"""
-        document = {
-            "id": f"custom_{uuid.uuid4().hex[:8]}",
-            "content": content,
-            "metadata": {
-                "topic": topic,
-                "subtopic": subtopic,
-                "level": level,
-                "source": "custom"
-            }
-        }
-
-        self.vector_db.add_documents([document])
-        logger.info(f"Added custom document for topic: {topic}")
 
     def get_stats(self) -> dict[str, Any]:
+        """Возвращает статистику векторной БД"""
         try:
             return self.vector_db.get_collection_stats()
         except Exception as e:

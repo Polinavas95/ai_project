@@ -12,7 +12,7 @@ from app.api.v1.handlers import app_router
 from app.clients.giga import create_gigachat_client
 from app.databases.vector import VectorDB
 from app.services.document_loader import DocumentLoader
-from app.services.ignite import AioIgniteClient
+from app.services.ignite import AioIgniteClient, BaseCache, caches_context
 from app.services.rag import RAGService
 from app.settings import app_settings
 from app.utils.token_verification import TokenVerification
@@ -36,10 +36,11 @@ async def lifespan(app: FastAPI):
         access_token_url=app_settings.giga.access_token_url,
     )
     access_token = await token_verification.refresh_token()
+    document_loader = DocumentLoader(documents_path=app_settings.vector_db.documents_path)
     rag_service = RAGService(
-        vector_db=VectorDB(vector_db_settings=app_settings.vector_bd),
-        documents_number=app_settings.vector_bd.documents_number,
-        document_loader=DocumentLoader(documents_path=app_settings.vector_bd.documents_path)
+        vector_db=VectorDB(vector_db_settings=app_settings.vector_db),
+        documents_number=app_settings.vector_db.documents_number,
+        document_loader=document_loader
     )
     rag_service.initialize_with_documents()
     giga_client = create_gigachat_client(settings=app_settings.giga, access_token=access_token)
@@ -49,9 +50,8 @@ async def lifespan(app: FastAPI):
         message_history_number=app_settings.giga.message_history_number,
         rag_service=rag_service,
     )
-    quiz_agent = QuizAgent(giga_client=giga_client, token_verification=token_verification)
-    cache = AioIgniteClient(settings=app_settings.ignite)
-    await cache.connect(addresses=app_settings.ignite.addresses)
+    quiz_agent = QuizAgent(giga_client=giga_client, token_verification=token_verification, rag_service=rag_service)
+    cache_client, cache = await caches_context.configure(settings=app_settings.ignite)
     app.state.dialog_agent = dialog_agent
     app.state.quiz_agent = quiz_agent
     app.state.cache = cache
@@ -60,7 +60,7 @@ async def lifespan(app: FastAPI):
     yield
     logger.info("Завершение сессий...")
     await giga_session.close()
-    await cache.shutdown()
+    await cache_client.shutdown()
     logger.info("Завершение сессий выполнено")
 
 app = FastAPI(lifespan=lifespan, docs_url="/")

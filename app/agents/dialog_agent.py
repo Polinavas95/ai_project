@@ -3,6 +3,7 @@ from typing import Any
 
 from langchain.chains.llm import LLMChain
 from langchain_community.chat_models import GigaChat
+from langchain_core.messages import AIMessage
 from langchain_core.prompts import SystemMessagePromptTemplate, HumanMessagePromptTemplate, ChatPromptTemplate
 from prometheus_async.aio import time
 
@@ -53,7 +54,6 @@ class DialogAgent:
             topic_context = self._rag_service.get_relevant_context(
                 query=current_message,
                 topic=study_topic,
-                user_level=user_level
             )
 
             output = await self.__llm_chain.ainvoke(
@@ -67,7 +67,7 @@ class DialogAgent:
             )
             content: dict[Any, Any] = parse_json(output["text"])
             logger.debug(f"DialogAgent output: {content=}")
-            history.append(output)
+            history.append(AIMessage(content=str(content)).model_dump(mode="json"))
             return content["answer"], history
         except DialogAgentError as e:
             logging.exception(f"DialogAgent exception: {e}")

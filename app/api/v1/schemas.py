@@ -1,3 +1,4 @@
+from typing import Any
 from uuid import UUID
 
 from pydantic import BaseModel, Field
@@ -5,23 +6,29 @@ from pydantic import BaseModel, Field
 from app.schemas import QuizAction, StudyTopic
 
 
-class ChatRequest(BaseModel):
+class ClientIDModel(BaseModel):
     client_id: str = Field(example="6f707083-7458-4193-9435-36b539115049")
+
+
+class HistoryResponse(BaseModel):
+    history: dict[str, Any]
+
+
+class ChatRequest(ClientIDModel):
     message: str
     study_topic: StudyTopic
 
 
-class ChatResponse(BaseModel):
+class ChatResponse(ClientIDModel):
     client_id: UUID
     giga_answer: str
 
 
-class QuizRequest(ChatRequest):
+class QuizRequest(ClientIDModel):
     action: QuizAction
 
 
-class QuizResponse(BaseModel):
-    client_id: UUID
+class QuizResponse(ClientIDModel):
     is_correct: bool | None = None
     score: int | None = None
     feedback: str | None = None

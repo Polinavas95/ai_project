@@ -44,7 +44,7 @@ class VectorDBSettings(BaseSettings):
     collection_name: Annotated[str, Field(alias="VECTOR_DB_COLLECTION_NAME")] = "learning_materials"
     embedding_model: Annotated[str, Field(alias="VECTOR_DB_EMBEDDING_MODEL")] = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
     documents_number: Annotated[int, Field(alias="VECTOR_DB_DOCUMENTS_NUMBER")] = 4
-    documents_path: Annotated[str, Field(alias="VECTOR_DB_DOCUMENTS_PATH")] = "./sources"
+    documents_path: Annotated[str, Field(alias="VECTOR_DB_DOCUMENTS_PATH")] = ""
 
 
 class LoggingSettings(BaseSettings):
@@ -61,7 +61,7 @@ class Settings(BaseSettings):
     port: Annotated[int, Field(alias="APP_PORT")] = 8080
     giga: GigaSettings = GigaSettings()
     ignite: Ignite = Ignite()
-    vector_bd: VectorDBSettings = VectorDBSettings()
+    vector_db: VectorDBSettings = VectorDBSettings()
     logger: LoggingSettings = LoggingSettings()
 
 
