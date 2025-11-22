@@ -51,6 +51,7 @@ class DialogAgent:
                 self.__llm_chain.llm = self._giga_client
 
             current_history = [self.system_message, self.human_message] + history
+
             topic_context = self._rag_service.get_relevant_context(
                 query=current_message,
                 topic=study_topic,

@@ -43,7 +43,7 @@ async def agent_dialog(request: Request, data: ChatRequest):
 
 @app_router.post("/quiz", response_model=QuizResponse, response_model_exclude_none=True)
 async def agent_dialog(request: Request, data: QuizRequest):
-    study_topic = data.study_topic
+    study_topic = data.study_topic.value
     cache = request.app.state.cache
     client_id, message = data.client_id, data.message
     logger.debug(f"[{client_id}] Request with message {message}")
@@ -70,7 +70,7 @@ async def agent_dialog(request: Request, data: QuizRequest):
     return {**giga_chat_answer, "client_id": client_id}
 
 
-@app_router.get("/history", response_model=HistoryResponse, response_model_exclude_none=True)
+@app_router.post("/history", response_model=HistoryResponse, response_model_exclude_none=True)
 async def agent_dialog(request: Request, data: ClientIDModel):
     cache = request.app.state.cache
     history = await cache.get(client_id=data.client_id, default={})

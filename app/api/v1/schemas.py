@@ -24,7 +24,7 @@ class ChatResponse(ClientIDModel):
     giga_answer: str
 
 
-class QuizRequest(ClientIDModel):
+class QuizRequest(ChatRequest):
     action: QuizAction
 
 

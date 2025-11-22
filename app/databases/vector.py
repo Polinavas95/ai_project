@@ -1,4 +1,5 @@
 import logging
+import os
 from typing import Any
 from chromadb.config import Settings
 import chromadb
@@ -6,6 +7,11 @@ from sentence_transformers import SentenceTransformer
 from app.settings import VectorDBSettings
 
 logger = logging.getLogger(__name__)
+
+os.environ["ORT_DISABLE_ML_OPS"] = "1"
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = ""
+os.environ["CHROMA_EMBEDDING_FUNCTION_PROVIDER"] = "sentence_transformers"
 
 
 class CustomEmbeddingFunction:
