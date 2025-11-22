@@ -1,0 +1,22 @@
+Переменные в Python
+Переменные в Python не требуют объявления типа. Они создаются в момент присваивания значения.
+x = 5
+name = "Alice"
+
+Типы данных
+Основные типы: int, float, str, bool, list, dict, tuple, set.
+
+Условные операторы
+if condition:
+    # код
+elif another_condition:
+    # код
+else:
+    # код
+
+Циклы
+for i in range(5):
+    print(i)
+
+while condition:
+    # код

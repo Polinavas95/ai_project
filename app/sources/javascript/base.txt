@@ -1,0 +1,15 @@
+Переменные в JavaScript
+let - блочная область видимости
+const - константа
+var - функциональная область видимости
+
+Типы данных
+string, number, boolean, null, undefined, object, symbol
+
+Функции
+function greet(name) {
+    return `Hello, ${name}!`;
+}
+
+Стрелочные функции
+const greet = (name) => `Hello, ${name}!`;
