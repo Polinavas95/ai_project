@@ -1,4 +1,12 @@
+import os
+
 from app.settings import app_settings
+
+
+os.environ["ORT_DISABLE_ML_OPS"] = "1"
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = ""
+os.environ["CHROMA_EMBEDDING_FUNCTION_PROVIDER"] = "sentence_transformers"
 
 
 if __name__ == "__main__":

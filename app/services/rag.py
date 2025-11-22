@@ -1,4 +1,5 @@
 import logging
+import time
 from typing import Any
 
 from app.services.document_loader import DocumentLoader
@@ -16,22 +17,19 @@ class RAGService:
     def initialize_with_documents(self):
         try:
             documents = self.document_loader.load_documents()
-
             if documents:
                 self.vector_db.add_documents(documents)
-                logger.info(f"RAG service initialized with {len(documents)} documents")
             else:
-                logger.warning("No documents found to initialize RAG service")
+                logger.warning("Нет документов для загрузки")
 
         except Exception as e:
-            logger.error(f"Error initializing RAG service with documents: {e}")
+            logger.error(f"Ошибка инициализации RAG service: {e}")
 
     def get_relevant_context(self, query: str, topic: str) -> str:
-        """Получает релевантный контекст из векторной БД"""
         try:
             documents = self.vector_db.search(
                 query=query,
-                topic=topic,
+                where_filter={"topic": topic},
                 n_results=self.n_results,
             )
 
@@ -51,7 +49,6 @@ class RAGService:
 
 
     def get_stats(self) -> dict[str, Any]:
-        """Возвращает статистику векторной БД"""
         try:
             return self.vector_db.get_collection_stats()
         except Exception as e:
