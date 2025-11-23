@@ -172,3 +172,4 @@ fluent-bit/
 .python-version
 .cert
 *.env
+chroma_db

@@ -1,4 +1,4 @@
-from app.schemas import StudyTopic
+from dialog_api.schemas import StudyTopic
 
 system_prompt = """
 Ты - персональный учебный ассистент, специализирующийся на IT и программировании.

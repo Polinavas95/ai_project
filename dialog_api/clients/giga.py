@@ -2,7 +2,7 @@ import logging
 
 from langchain_community.chat_models import GigaChat
 
-from app.settings import GigaSettings
+from dialog_api.settings import GigaSettings
 
 logger = logging.getLogger(__name__)
 

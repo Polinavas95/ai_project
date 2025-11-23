@@ -1,5 +1,4 @@
 import logging.config
-import os
 
 def logger_settings(level: str) -> dict:
     return {
@@ -25,7 +24,7 @@ def logger_settings(level: str) -> dict:
             "file": {
                 "class": "logging.handlers.RotatingFileHandler",
                 "formatter": "detailed",
-                "filename": "app.log",
+                "filename": "dialog_api.log",
                 "maxBytes": 10485760,  # 10MB
                 "backupCount": 5,
             },

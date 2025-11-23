@@ -3,11 +3,8 @@ from time import time as current_time
 
 from aiohttp import ClientSession, hdrs
 
-from app.clients.giga import logger
-from app.utils.uuid import generate_uuid
-
-
-class TokenVerificationError(Exception): ...
+from dialog_api.clients.giga import logger
+from dialog_api.utils.uuid import generate_uuid
 
 
 class TokenVerification:

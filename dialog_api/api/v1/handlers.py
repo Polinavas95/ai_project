@@ -2,9 +2,9 @@ import logging
 
 from fastapi import APIRouter, Request
 
-from app.api.v1.schemas import ChatRequest, ChatResponse, QuizResponse, QuizRequest, ClientIDModel, HistoryResponse
-from app.prompts.dialog import TOPIC_CONTEXT
-from app.schemas import StudyTopic, UserLevel
+from dialog_api.api.v1.schemas import ChatRequest, ChatResponse, QuizResponse, QuizRequest, ClientIDModel, HistoryResponse
+from dialog_api.prompts.dialog import TOPIC_CONTEXT
+from dialog_api.schemas import StudyTopic, UserLevel
 
 app_router = APIRouter(prefix="/api/v1", tags=["v1"])
 logger = logging.getLogger(__name__)
@@ -53,13 +53,14 @@ async def agent_dialog(request: Request, data: QuizRequest):
     user_level = user_session.get(study_topic, {}).get("user_level", UserLevel.beginner.value)
     topic_context = TOPIC_CONTEXT.get(study_topic, TOPIC_CONTEXT[StudyTopic.python])
     giga_chat_answer, history = await quiz_agent.ainvoke(
-        history=history, action=data.action, user_level=user_level, study_topic=study_topic,
+        history=history, action=data.action, user_level=user_level,
+        study_topic=study_topic, current_message=message,
     )
 
     user_session.update(
         {
             study_topic: {
-                "history": history + [message],
+                "history": history,
                 "user_level": user_level,
                 "topic_context": topic_context,
             }

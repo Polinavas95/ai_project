@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from pydantic import Field, AfterValidator
 from pydantic_settings import BaseSettings as PydanticBaseSettings
 
-from app.utils.logger_config import logger_settings, setup_logging
+from dialog_api.utils.logger_config import logger_settings, setup_logging
 
 load_dotenv()
 
@@ -40,11 +40,23 @@ class Ignite(BaseSettings):
 
 
 class VectorDBSettings(BaseSettings):
-    persist_directory: Annotated[str, Field(alias="VECTOR_DB_PERSIST_DIRECTORY")] = "./chroma_db"
+    host: Annotated[str, Field(alias="CHROMA_SERVER_HOST")] = ""
+    port: Annotated[int, Field(alias="CHROMA_SERVER_HTTP_PORT")] = 8000
+    auth_credentials: Annotated[str, Field(alias="CHROMA_AUTH_CREDENTIALS")] = ""
     collection_name: Annotated[str, Field(alias="VECTOR_DB_COLLECTION_NAME")] = "learning_materials"
-    embedding_model: Annotated[str, Field(alias="VECTOR_DB_EMBEDDING_MODEL")] = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+    embedding_model: Annotated[str, Field(alias="VECTOR_DB_EMBEDDING_MODEL")] = "all-MiniLM-L6-v2"
     documents_number: Annotated[int, Field(alias="VECTOR_DB_DOCUMENTS_NUMBER")] = 4
     documents_path: Annotated[str, Field(alias="VECTOR_DB_DOCUMENTS_PATH")] = ""
+
+    @property
+    def chroma_client_settings(self) -> dict:
+        return {
+            "host": self.host,
+            "port": self.port,
+            "headers": {
+                "X_CHROMA_TOKEN": self.auth_token
+            } if self.auth_token else {}
+        }
 
 
 class LoggingSettings(BaseSettings):
@@ -58,7 +70,7 @@ class LoggingSettings(BaseSettings):
 class Settings(BaseSettings):
     app_name: Annotated[str, Field(alias="APP_NAME")] = "gigachat-agent"
     host: Annotated[str, Field(alias="APP_HOST")] = "0.0.0.0"
-    port: Annotated[int, Field(alias="APP_PORT")] = 8080
+    port: Annotated[int, Field(alias="APP_PORT")] = 8082
     giga: GigaSettings = GigaSettings()
     ignite: Ignite = Ignite()
     vector_db: VectorDBSettings = VectorDBSettings()

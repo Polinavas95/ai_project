@@ -3,7 +3,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
-from app.schemas import QuizAction, StudyTopic
+from dialog_api.schemas import QuizAction, StudyTopic
 
 
 class ClientIDModel(BaseModel):

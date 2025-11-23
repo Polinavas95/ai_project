@@ -4,7 +4,7 @@ from typing import Any
 from chromadb.config import Settings
 import chromadb
 from sentence_transformers import SentenceTransformer
-from app.settings import VectorDBSettings
+from dialog_api.settings import VectorDBSettings
 
 logger = logging.getLogger(__name__)
 
@@ -12,6 +12,7 @@ os.environ["ORT_DISABLE_ML_OPS"] = "1"
 os.environ["OMP_NUM_THREADS"] = "1"
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
 os.environ["CHROMA_EMBEDDING_FUNCTION_PROVIDER"] = "sentence_transformers"
+os.environ["CHROMA_ANONYMIZED_TELEMETRY"] = "FALSE"
 
 
 class CustomEmbeddingFunction:
@@ -32,25 +33,42 @@ class VectorDB:
     def __init__(self, vector_db_settings: VectorDBSettings):
         self.vector_db_settings = vector_db_settings
         self.embedding_function = CustomEmbeddingFunction(vector_db_settings.embedding_model)
-        self.client = chromadb.PersistentClient(
-            path=vector_db_settings.persist_directory,
-            settings=Settings(anonymized_telemetry=False),
+
+        self.client = chromadb.HttpClient(
+            host=vector_db_settings.host,
+            port=str(vector_db_settings.port),
+            settings=Settings(
+                anonymized_telemetry=False,
+                allow_reset=True,
+            ),
+            headers={"X_CHROMA_TOKEN": vector_db_settings.auth_token} if hasattr(vector_db_settings,
+                                                                                 'auth_token') and vector_db_settings.auth_token else {}
         )
+        logger.info(f"Подключение к ChromaDB серверу: {vector_db_settings.host}:{vector_db_settings.port}")
 
         self.collection = self._get_or_create_collection()
 
     def _get_or_create_collection(self):
         try:
-            collection = self.client.get_collection(
-                name=self.vector_db_settings.collection_name,
-            )
+            if hasattr(self.client, "__class__") and self.client.__class__.__name__ == "HttpClient":
+                collection = self.client.get_collection(
+                    name=self.vector_db_settings.collection_name,
+                    embedding_function=self.embedding_function
+                )
+            else:
+                collection = self.client.get_collection(
+                    name=self.vector_db_settings.collection_name,
+                )
             logger.info(f"Коллекция найдена: {self.vector_db_settings.collection_name}")
             return collection
         except Exception as e:
+            if "already exists" in str(e):
+                logger.info(f"Коллекция уже существует, получаем ее: {self.vector_db_settings.collection_name}")
+                return self.client.get_collection(name=self.vector_db_settings.collection_name)
             logger.warning(f"Коллекция не найдена, создаем новую: {e}")
             collection = self.client.create_collection(
                 name=self.vector_db_settings.collection_name,
-                embedding_function=self.embedding_function,  # Только для create
+                embedding_function=self.embedding_function,
                 metadata={"description": "Learning materials for educational assistant"}
             )
             logger.info(f"Создана новая коллекция: {self.vector_db_settings.collection_name}")
@@ -61,7 +79,7 @@ class VectorDB:
             logger.info(f"Добавляем {len(documents)} документов...")
 
             # Разбиваем на батчи чтобы избежать переполнения памяти
-            batch_size = 100
+            batch_size = 50
             total_added = 0
 
             for i in range(0, len(documents), batch_size):
@@ -125,3 +143,14 @@ class VectorDB:
         except Exception as e:
             logger.error(f"Ошибка получения статистики: {e}")
             return {"document_count": 0}
+
+    def health_check(self) -> bool:
+        """Проверка здоровья подключения"""
+        try:
+            if isinstance(self.client, chromadb.HttpClient):
+                self.client.heartbeat()
+            stats = self.get_collection_stats()
+            return stats["document_count"] >= 0
+        except Exception as e:
+            logger.error(f"Health check failed: {e}")
+            return False

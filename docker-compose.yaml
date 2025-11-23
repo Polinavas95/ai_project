@@ -1,15 +1,107 @@
 version: "3.8"
 
 services:
-  backend:
-    build: .
+#  backend:
+#    build: .
+#    ports:
+#      - "8002:8002"
+#    volumes:
+#      - ./dialog_api:/dialog_api
+#      - chroma_data:/dialog_api/chroma_data
+#    env_file:
+#      - ".env"
+#    networks:
+#      - monitoring
+#    depends_on:
+#      - chromadb
+#      - ignite
+
+  chromadb:
+    image: chromadb/chroma:0.5.0
     ports:
-      - "8000:8000"
+      - "8001:8000"
     volumes:
-      - ./app:/app
+      - chroma_data:/chroma/chroma
     env_file:
-      ".env"
+      - ".env"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
   ignite:
-    image: apacheignite/ignite
+    image: apacheignite/ignite:2.14.0
     ports:
-      - 10800:10800
+      - "10800:10800"
+    volumes:
+      - ignite_data:/opt/ignite/apache-ignite/work
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/ignite?cmd=version"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.enable-lifecycle'
+      - '--web.listen-address=0.0.0.0:9090'
+    networks:
+      - default  # должна быть такая же сеть как у backend
+      - monitoring
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    env_file:
+      - ".env"
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    networks:
+      - monitoring
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    restart: unless-stopped
+    networks:
+      - monitoring
+
+volumes:
+  chroma_data:
+    driver: local
+  ignite_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+networks:
+  monitoring:
+    driver: bridge

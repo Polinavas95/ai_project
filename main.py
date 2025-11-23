@@ -1,4 +1,4 @@
-from app.settings import app_settings
+from dialog_api.settings import app_settings
 
 
 if __name__ == "__main__":
@@ -6,7 +6,7 @@ if __name__ == "__main__":
     from granian.server import Server
 
     Server(
-        "app.server:app",
+        "dialog_api.server:app",
         interface=Interfaces.ASGI,
         workers=1,
         address=app_settings.host,

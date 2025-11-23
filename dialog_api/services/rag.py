@@ -1,8 +1,6 @@
 import logging
-import time
-from typing import Any
 
-from app.services.document_loader import DocumentLoader
+from dialog_api.services.document_loader import DocumentLoader
 
 logger = logging.getLogger(__name__)
 
@@ -34,10 +32,11 @@ class RAGService:
             )
 
             if not documents:
+                logger.warning(f"Не найдено документов для темы: {topic}, запроса: {query}")
                 return ""
 
             context_parts = []
-            for i, doc in enumerate(documents, self.documents_number):
+            for i, doc in enumerate(documents, 1):
                 doc_level = doc.get("metadata", {}).get("level", "unknown")
                 context_parts.append(f"{i}. [{doc_level}] {doc['content']}")
 
@@ -47,10 +46,5 @@ class RAGService:
             logger.error(f"Error getting relevant context: {e}")
             return ""
 
-
-    def get_stats(self) -> dict[str, Any]:
-        try:
-            return self.vector_db.get_collection_stats()
-        except Exception as e:
-            logger.error(f"Error getting RAG stats: {e}")
-            return {"error": "Unable to get statistics"}
+    def health_check(self) -> bool:
+        return self.vector_db.health_check()

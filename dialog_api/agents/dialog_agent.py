@@ -3,17 +3,17 @@ from typing import Any
 
 from langchain.chains.llm import LLMChain
 from langchain_community.chat_models import GigaChat
-from langchain_core.messages import AIMessage
+from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.prompts import SystemMessagePromptTemplate, HumanMessagePromptTemplate, ChatPromptTemplate
 from prometheus_async.aio import time
 
-from app.clients.giga import create_gigachat_client
-from app.metrics import DIALOG_GIGA_AINVOKE
-from app.prompts.dialog import system_prompt, user_prompt
-from app.services.rag import RAGService
-from app.settings import app_settings
-from app.utils.parser import parse_json
-from app.utils.token_verification import TokenVerification
+from dialog_api.clients.giga import create_gigachat_client
+from dialog_api.metrics import DIALOG_GIGA_AINVOKE
+from dialog_api.prompts.dialog import system_prompt, user_prompt
+from dialog_api.services.rag import RAGService
+from dialog_api.settings import app_settings
+from dialog_api.utils.parser import parse_json
+from dialog_api.utils.token_verification import TokenVerification
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +50,8 @@ class DialogAgent:
                 )
                 self.__llm_chain.llm = self._giga_client
 
+            history.append(HumanMessage(content=current_message).model_dump(mode="json"))
+
             current_history = [self.system_message, self.human_message] + history
 
             topic_context = self._rag_service.get_relevant_context(
@@ -68,7 +70,7 @@ class DialogAgent:
             )
             content: dict[Any, Any] = parse_json(output["text"])
             logger.debug(f"DialogAgent output: {content=}")
-            history.append(AIMessage(content=str(content)).model_dump(mode="json"))
+            history.append(AIMessage(content=str(content["answer"])).model_dump(mode="json"))
             return content["answer"], history
         except DialogAgentError as e:
             logging.exception(f"DialogAgent exception: {e}")

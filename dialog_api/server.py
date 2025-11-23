@@ -6,16 +6,16 @@ from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 from starlette_exporter import PrometheusMiddleware, handle_metrics
 
-from app.agents.dialog_agent import DialogAgent
-from app.agents.quiz_agent import QuizAgent
-from app.api.v1.handlers import app_router
-from app.clients.giga import create_gigachat_client
-from app.databases.vector import VectorDB
-from app.services.document_loader import DocumentLoader
-from app.services.ignite import AioIgniteClient, BaseCache, caches_context
-from app.services.rag import RAGService
-from app.settings import app_settings
-from app.utils.token_verification import TokenVerification
+from dialog_api.agents.dialog_agent import DialogAgent
+from dialog_api.agents.quiz_agent import QuizAgent
+from dialog_api.api.v1.handlers import app_router
+from dialog_api.clients.giga import create_gigachat_client
+from dialog_api.databases.vector import VectorDB
+from dialog_api.services.document_loader import DocumentLoader
+from dialog_api.services.ignite import caches_context
+from dialog_api.services.rag import RAGService
+from dialog_api.settings import app_settings
+from dialog_api.utils.token_verification import TokenVerification
 
 logger = logging.getLogger(__name__)
 

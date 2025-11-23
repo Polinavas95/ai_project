@@ -8,7 +8,7 @@ from pyignite.aio_cache import AioCache
 from pyignite.datatypes import ExpiryPolicy
 from pyignite.datatypes.prop_codes import PROP_EXPIRY_POLICY, PROP_NAME
 
-from app.settings import Ignite
+from dialog_api.settings import Ignite
 
 
 class AioIgniteClient:

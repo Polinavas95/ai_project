@@ -1,8 +1,5 @@
-from dataclasses import dataclass
 from enum import Enum
-from typing import Any
 
-from pydantic import BaseModel
 
 
 class Role(Enum):
@@ -25,10 +22,3 @@ class UserLevel(Enum):
 class QuizAction(Enum):
     generate_question = "generate_question"
     check_answer = "check_answer"
-
-
-@dataclass(frozen=True, kw_only=True, slots=True)
-class Message:
-    role: Role
-    content: str
-

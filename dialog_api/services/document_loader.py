@@ -2,7 +2,7 @@ import os
 import logging
 from typing import Any
 
-from app.schemas import StudyTopic, UserLevel
+from dialog_api.schemas import StudyTopic, UserLevel
 
 logger = logging.getLogger(__name__)
 
