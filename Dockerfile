@@ -20,4 +20,4 @@ COPY . .
 ENV PYTHONPATH=/app
 
 
-CMD ["python", "-m", "dialog_api.server"]
+CMD ["granian", "--interface", "asgi", "dialog_api.server:app", "--host", "0.0.0.0", "--port", "8002"]
