@@ -63,7 +63,7 @@ curl -X POST "http://localhost:8002/api/v1/dialog" \
 ```
 Генерация теста:
 ```bash
-curl -X POST "http://localhost:8000/api/v1/quiz" \
+curl -X POST "http://localhost:8002/api/v1/quiz" \
   -H "Content-Type: application/json" \
   -d '{
     "client_id": "6f707083-7458-4193-9435-36b539115049", 
