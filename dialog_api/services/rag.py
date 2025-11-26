@@ -6,11 +6,10 @@ logger = logging.getLogger(__name__)
 
 
 class RAGService:
-    def __init__(self, vector_db, documents_number: int, document_loader: DocumentLoader, n_results: int = 5):
+    def __init__(self, vector_db, documents_number: int, document_loader: DocumentLoader):
         self.vector_db = vector_db
-        self.documents_number = documents_number
         self.document_loader = document_loader
-        self.n_results = n_results
+        self.n_results = documents_number
 
     def initialize_with_documents(self):
         try:

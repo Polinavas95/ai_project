@@ -74,4 +74,4 @@ class DialogAgent:
             return content["answer"], history
         except DialogAgentError as e:
             logging.exception(f"DialogAgent exception: {e}")
-            return "Попробуйте задать вопрос позже. Ошибка на стороне сервера"
+            return "Попробуйте задать вопрос позже. Ошибка на стороне сервера", history

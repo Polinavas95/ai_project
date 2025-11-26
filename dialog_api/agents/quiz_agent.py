@@ -71,4 +71,4 @@ class QuizAgent:
             return content, history
         except QuizAgentError as e:
             logging.exception(f"QuizAgentError exception: {e}")
-            return "Попробуйте задать вопрос позже. Ошибка на стороне сервера"
+            return "Попробуйте задать вопрос позже. Ошибка на стороне сервера", history

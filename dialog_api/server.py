@@ -40,7 +40,7 @@ async def lifespan(app: FastAPI):
     rag_service = RAGService(
         vector_db=VectorDB(vector_db_settings=app_settings.vector_db),
         documents_number=app_settings.vector_db.documents_number,
-        document_loader=document_loader
+        document_loader=document_loader,
     )
     rag_service.initialize_with_documents()
     giga_client = create_gigachat_client(settings=app_settings.giga, access_token=access_token)
@@ -65,13 +65,6 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan, docs_url="/")
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 app.include_router(router=app_router)
 app.add_middleware(PrometheusMiddleware, app_name=app_settings.app_name, group_paths=True)
 app.add_route("/prometheus", handle_metrics)
