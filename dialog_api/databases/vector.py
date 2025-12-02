@@ -33,46 +33,34 @@ class VectorDB:
     def __init__(self, vector_db_settings: VectorDBSettings):
         self.vector_db_settings = vector_db_settings
         self.embedding_function = CustomEmbeddingFunction(vector_db_settings.embedding_model)
+        auth_token = vector_db_settings.auth_token
 
         self.client = chromadb.HttpClient(
             host=vector_db_settings.host,
             port=str(vector_db_settings.port),
-            settings=Settings(
-                anonymized_telemetry=False,
-                allow_reset=True,
-            ),
-            headers={"X_CHROMA_TOKEN": vector_db_settings.auth_token} if hasattr(vector_db_settings,
-                                                                                 'auth_token') and vector_db_settings.auth_token else {}
+            settings=Settings(anonymized_telemetry=False, allow_reset=True),
+            headers={"X_CHROMA_TOKEN": auth_token} if auth_token else {},
         )
         logger.info(f"Подключение к ChromaDB серверу: {vector_db_settings.host}:{vector_db_settings.port}")
 
         self.collection = self._get_or_create_collection()
 
     def _get_or_create_collection(self):
+        client_type = self.client.__class__.__name__
+
         try:
-            if hasattr(self.client, "__class__") and self.client.__class__.__name__ == "HttpClient":
-                collection = self.client.get_collection(
+            if client_type == "HttpClient":
+                return self.client.get_collection(
                     name=self.vector_db_settings.collection_name,
-                    embedding_function=self.embedding_function
+                    embedding_function=self.embedding_function,
                 )
-            else:
-                collection = self.client.get_collection(
-                    name=self.vector_db_settings.collection_name,
-                )
-            logger.info(f"Коллекция найдена: {self.vector_db_settings.collection_name}")
-            return collection
-        except Exception as e:
-            if "already exists" in str(e):
-                logger.info(f"Коллекция уже существует, получаем ее: {self.vector_db_settings.collection_name}")
-                return self.client.get_collection(name=self.vector_db_settings.collection_name)
-            logger.warning(f"Коллекция не найдена, создаем новую: {e}")
-            collection = self.client.create_collection(
+            return self.client.get_collection(name=self.vector_db_settings.collection_name)
+        except Exception:
+            return self.client.create_collection(
                 name=self.vector_db_settings.collection_name,
                 embedding_function=self.embedding_function,
                 metadata={"description": "Learning materials for educational assistant"}
             )
-            logger.info(f"Создана новая коллекция: {self.vector_db_settings.collection_name}")
-            return collection
 
     def add_documents(self, documents: list[dict[str, Any]]) -> None:
         """

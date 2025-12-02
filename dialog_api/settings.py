@@ -47,6 +47,7 @@ class VectorDBSettings(BaseSettings):
     embedding_model: Annotated[str, Field(alias="VECTOR_DB_EMBEDDING_MODEL")] = "all-MiniLM-L6-v2"
     documents_number: Annotated[int, Field(alias="VECTOR_DB_DOCUMENTS_NUMBER")] = 4
     documents_path: Annotated[str, Field(alias="VECTOR_DB_DOCUMENTS_PATH")] = ""
+    auth_token: Annotated[str, Field(alias="VECTOR_DB_AUTH_TOKEN")] = ""
 
     @property
     def chroma_client_settings(self) -> dict:
