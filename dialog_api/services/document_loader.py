@@ -44,6 +44,13 @@ class DocumentLoader:
         return documents
 
     def _parse_text_file(self, file_path: str, topic: str, filename: str) -> list[dict[str, Any]]:
+        """
+        Метод загрузки учебных материалов в векторную базу
+        :param file_path: путь до директории
+        :param topic: топик
+        :param filename: имя файла
+        :return:
+        """
         try:
             with open(file_path, "r", encoding="utf-8") as file:
                 content = file.read()

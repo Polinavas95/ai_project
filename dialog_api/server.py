@@ -3,7 +3,6 @@ import ssl
 
 import aiohttp
 from fastapi import FastAPI
-from starlette.middleware.cors import CORSMiddleware
 from starlette_exporter import PrometheusMiddleware, handle_metrics
 
 from dialog_api.agents.dialog_agent import DialogAgent
@@ -55,7 +54,6 @@ async def lifespan(app: FastAPI):
     app.state.dialog_agent = dialog_agent
     app.state.quiz_agent = quiz_agent
     app.state.cache = cache
-    app.state.rag_service = rag_service
     logger.info(f"Запуск приложения с уровнем логирования: {app_settings.logger.level}")
     yield
     logger.info("Завершение сессий...")

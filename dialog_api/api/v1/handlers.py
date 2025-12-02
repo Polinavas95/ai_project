@@ -3,8 +3,7 @@ import logging
 from fastapi import APIRouter, Request
 
 from dialog_api.api.v1.schemas import ChatRequest, ChatResponse, QuizResponse, QuizRequest, ClientIDModel, HistoryResponse
-from dialog_api.prompts.dialog import TOPIC_CONTEXT
-from dialog_api.schemas import StudyTopic, UserLevel
+from dialog_api.schemas import UserLevel
 
 app_router = APIRouter(prefix="/api/v1", tags=["v1"])
 logger = logging.getLogger(__name__)

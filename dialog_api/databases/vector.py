@@ -74,11 +74,14 @@ class VectorDB:
             logger.info(f"Создана новая коллекция: {self.vector_db_settings.collection_name}")
             return collection
 
-    def add_documents(self, documents: list[dict[str, Any]]):
+    def add_documents(self, documents: list[dict[str, Any]]) -> None:
+        """
+        Метод добавления документов в вевторную БД
+        :param documents: cписок документов
+        :return:
+        """
         try:
             logger.info(f"Добавляем {len(documents)} документов...")
-
-            # Разбиваем на батчи чтобы избежать переполнения памяти
             batch_size = 50
             total_added = 0
 
@@ -89,8 +92,6 @@ class VectorDB:
                 texts = [doc["content"] for doc in batch]
                 metadatas = [doc["metadata"] for doc in batch]
 
-                logger.debug(f"Добавляем батч {i // batch_size + 1}: {len(batch)} документов")
-
                 self.collection.add(
                     documents=texts,
                     metadatas=metadatas,
@@ -98,7 +99,7 @@ class VectorDB:
                 )
                 total_added += len(batch)
 
-            logger.info(f"✅ Успешно добавлено {total_added} документов")
+            logger.info(f"Успешно добавлено {total_added} документов")
 
             # Проверяем добавление
             count = self.collection.count()
@@ -109,6 +110,13 @@ class VectorDB:
             raise
 
     def search(self, query: str, where_filter: dict[str, str], n_results: int = 5) -> list[dict[str, Any]]:
+        """
+        Метод семантического поиска учебных материалов по запросу пользователя
+        :param query: запрос пользователя
+        :param where_filter: фильтрация по метаданным
+        :param n_results: количество документов
+        :return: n_results наиболее релевантных документов
+        """
         try:
             results = self.collection.query(
                 query_texts=[query],
@@ -143,14 +151,3 @@ class VectorDB:
         except Exception as e:
             logger.error(f"Ошибка получения статистики: {e}")
             return {"document_count": 0}
-
-    def health_check(self) -> bool:
-        """Проверка здоровья подключения"""
-        try:
-            if isinstance(self.client, chromadb.HttpClient):
-                self.client.heartbeat()
-            stats = self.get_collection_stats()
-            return stats["document_count"] >= 0
-        except Exception as e:
-            logger.error(f"Health check failed: {e}")
-            return False

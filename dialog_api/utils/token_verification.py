@@ -55,7 +55,7 @@ class TokenVerification:
     def _is_token_expired(self) -> bool:
         if not self._access_token or not self._token_expires_at:
             return True
-        return current_time() >= (self._token_expires_at - 30)
+        return current_time() >= self._token_expires_at
 
 
     async def _ensure_valid_token(self) -> str:

@@ -23,6 +23,12 @@ class RAGService:
             logger.error(f"Ошибка инициализации RAG service: {e}")
 
     def get_relevant_context(self, query: str, topic: str) -> str:
+        """
+        Метод получения релевантного контекста из документов
+        :param query: запрос пользователя
+        :param topic: тема обучения
+        :return: контекст
+        """
         try:
             documents = self.vector_db.search(
                 query=query,
@@ -44,6 +50,3 @@ class RAGService:
         except Exception as e:
             logger.error(f"Error getting relevant context: {e}")
             return ""
-
-    def health_check(self) -> bool:
-        return self.vector_db.health_check()

@@ -41,6 +41,7 @@ class AioIgniteClient:
         client_settings[PROP_NAME] = f"{self.settings.cache_name}-{name}"
         return await self.client.get_or_create_cache(settings=client_settings)
 
+
 class BaseCache:
     def __init__(self, cache: AioCache) -> None:
         self.cache = cache
